@@ -120,27 +120,19 @@ const DEFAULT_SITES=[
   {id:'laregesh', name:'🌸 בית לרגש',                  repo:'beit-laregesh',  owner:'pinto1212121212-create'},
 ];
 
-function getSites(){
-  try{
-    const saved=localStorage.getItem('deploy_sites');
-    if(saved!==null)return JSON.parse(saved);
-    return DEFAULT_SITES;
-  }catch(e){return DEFAULT_SITES;}
-}
+function getSites(){try{return JSON.parse(localStorage.getItem('deploy_sites'))||DEFAULT_SITES;}catch(e){return DEFAULT_SITES;}}
+function saveSites(s){localStorage.setItem('deploy_sites',JSON.stringify(s));}
+function getDeletedIds(){try{return JSON.parse(localStorage.getItem('deleted_ids'))||[];}catch(e){return[];}}
 function initSites(){
-  // רק אם אין בכלל נתונים — טוען DEFAULT
-  if(localStorage.getItem('deploy_sites')===null){
-    saveSites(DEFAULT_SITES);
-  } else {
-    // מוסיף רק אתרים חדשים שלא קיימים ולא נמחקו
-    const saved=getSites();
-    const ids=saved.map(s=>s.id);
-    let changed=false;
-    DEFAULT_SITES.forEach(d=>{
-      if(!ids.includes(d.id)){saved.push(d);changed=true;}
-    });
-    if(changed)saveSites(saved);
-  }
+  if(localStorage.getItem('deploy_sites')===null){saveSites(DEFAULT_SITES);return;}
+  const saved=getSites();
+  const ids=saved.map(s=>s.id);
+  const deleted=getDeletedIds();
+  let changed=false;
+  DEFAULT_SITES.forEach(d=>{
+    if(!ids.includes(d.id)&&!deleted.includes(d.id)){saved.push(d);changed=true;}
+  });
+  if(changed)saveSites(saved);
 }
 function saveSites(s){localStorage.setItem('deploy_sites',JSON.stringify(s));}
 function getToken(){return localStorage.getItem('gh_deploy_token')||'';}
@@ -160,8 +152,7 @@ function saveToken(){
   showTokenStatus();toast('✅ Token נשמר!');
 }
 function clearToken(){
-  if(!confirm('למחוק את ה-Token?'))return;
-  localStorage.removeItem('gh_deploy_token');showTokenStatus();
+  localStorage.removeItem('gh_deploy_token');showTokenStatus();toast('🗑 Token נמחק');
 }
 function showTokenStatus(){
   const el=document.getElementById('token-status');
@@ -299,12 +290,13 @@ function confirmDelete(id,name){
 function closeDelModal(){document.getElementById('del-modal').style.display='none';_delId='';}
 function doDelete(){
   if(!_delId)return;
+  const deleted=getDeletedIds();
+  if(!deleted.includes(_delId))deleted.push(_delId);
+  localStorage.setItem('deleted_ids',JSON.stringify(deleted));
   saveSites(getSites().filter(s=>s.id!==_delId));
   closeDelModal();renderSites();
   toast('🗑 נמחק');
 }
-function deleteSite(id){saveSites(getSites().filter(s=>s.id!==id));renderSites();}
-
 let editCtx={repo:'',owner:'',sha:''};
 async function openEditor(repo,owner,name){
   const token=getToken();if(!token){toast('⚠️ נא להכניס Token קודם',true);return;}
