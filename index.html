@@ -93,6 +93,7 @@ h1{text-align:center;font-size:22px;margin-bottom:4px;color:#5eead4}
   <div class="edit-status" id="edit-status"></div>
   <div class="edit-btns">
     <button class="edit-cancel" onclick="closeEditor()">ביטול</button>
+    <button class="edit-cancel" onclick="downloadEdit()" style="background:#1e3a5f;color:#7dd3fc;border:1px solid #334155">⬇️ הורד</button>
     <button class="edit-save" id="edit-save-btn" onclick="saveEdit()">💾 שמור ופרסם</button>
   </div>
 </div>
@@ -120,19 +121,16 @@ const DEFAULT_SITES=[
   {id:'laregesh', name:'🌸 בית לרגש',                  repo:'beit-laregesh',  owner:'pinto1212121212-create'},
 ];
 
-function getSites(){try{return JSON.parse(localStorage.getItem('deploy_sites'))||DEFAULT_SITES;}catch(e){return DEFAULT_SITES;}}
-function saveSites(s){localStorage.setItem('deploy_sites',JSON.stringify(s));}
-function getDeletedIds(){try{return JSON.parse(localStorage.getItem('deleted_ids'))||[];}catch(e){return[];}}
-function initSites(){
-  if(localStorage.getItem('deploy_sites')===null){saveSites(DEFAULT_SITES);return;}
-  const saved=getSites();
-  const ids=saved.map(s=>s.id);
-  const deleted=getDeletedIds();
-  let changed=false;
-  DEFAULT_SITES.forEach(d=>{
-    if(!ids.includes(d.id)&&!deleted.includes(d.id)){saved.push(d);changed=true;}
-  });
-  if(changed)saveSites(saved);
+function getSites(){
+  try{
+    const s=localStorage.getItem('deploy_sites');
+    if(s===null){
+      // פעם ראשונה בלבד — שומר DEFAULT
+      localStorage.setItem('deploy_sites',JSON.stringify(DEFAULT_SITES));
+      return DEFAULT_SITES;
+    }
+    return JSON.parse(s)||[];
+  }catch(e){return DEFAULT_SITES;}
 }
 function saveSites(s){localStorage.setItem('deploy_sites',JSON.stringify(s));}
 function getToken(){return localStorage.getItem('gh_deploy_token')||'';}
@@ -297,6 +295,14 @@ function doDelete(){
   closeDelModal();renderSites();
   toast('🗑 נמחק');
 }
+function downloadEdit(){
+  const content=document.getElementById('edit-textarea').value;
+  if(!content)return;
+  const a=document.createElement('a');
+  a.href='data:text/html;charset=utf-8,'+encodeURIComponent(content);
+  a.download=(editCtx.repo||'site')+'.html';
+  a.click();
+}
 let editCtx={repo:'',owner:'',sha:''};
 async function openEditor(repo,owner,name){
   const token=getToken();if(!token){toast('⚠️ נא להכניס Token קודם',true);return;}
@@ -344,7 +350,7 @@ async function saveEdit(){
   }
 }
 
-window.onload=()=>{initSites();showTokenStatus();renderSites();};
+window.onload=()=>{showTokenStatus();renderSites();};
 </script>
 </body>
 </html>
