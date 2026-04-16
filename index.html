@@ -199,6 +199,12 @@ async function doUpload(id,repo,owner,input){
     pb.style.width='100%';
     btn.textContent='✅ עלה!';btn.style.background='#059669';st.textContent='יתעדכן תוך ~דקה';
     toast('✅ '+repo+' עלה בהצלחה!');
+    // אם עדכנו את הצינור עצמו — נרענן אחרי 4 שניות
+    if(repo==='deploy-panel'){
+      st.textContent='מרענן...';
+      setTimeout(()=>location.reload(),4000);
+      return;
+    }
     setTimeout(()=>{btn.textContent='🚀 בחר קובץ ופרסם';btn.disabled=false;btn.style.background='';st.textContent='';prog.style.display='none';pb.style.width='0%';input.value='';},4000);
   }catch(e){
     btn.textContent='❌ שגיאה';btn.disabled=false;st.textContent=e.message;st.className='card-status err';
