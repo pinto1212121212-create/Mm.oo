@@ -167,7 +167,7 @@ function renderSites(){
         <div>
           <div class="site-name">${s.name}</div>
           <div class="site-repo">${s.owner}/${s.repo}</div>
-          <a class="site-link" href="${url}" target="_blank">🌐 פתח אתר</a>
+          <a class="site-link" href="${url}?v=${Date.now()}" target="_blank">🌐 פתח אתר (טרי)</a>
         </div>
         <div class="card-actions">
           <button class="edit-btn" onclick="moveSite('${s.id}',-1)" style="padding:6px 8px">▲</button>
@@ -210,7 +210,8 @@ async function doUpload(id,repo,owner,input){
     pb.style.width='90%';st.textContent='מפעיל Pages...';
     await enablePages(owner,repo,token);
     pb.style.width='100%';
-    btn.textContent='✅ עלה!';btn.style.background='#059669';st.textContent='יתעדכן תוך ~דקה';
+    btn.textContent='✅ עלה!';btn.style.background='#059669';
+    st.innerHTML=`✅ <a href="https://${owner}.github.io/${repo}?v=${Date.now()}" target="_blank" style="color:#5eead4;text-decoration:underline;font-weight:700">פתח אתר עכשיו ←</a>`;
     toast('✅ '+repo+' עלה בהצלחה!');
     // אם עדכנו את הצינור עצמו — נרענן אחרי 4 שניות
     if(repo==='deploy-panel'){
@@ -218,7 +219,7 @@ async function doUpload(id,repo,owner,input){
       setTimeout(()=>location.reload(),4000);
       return;
     }
-    setTimeout(()=>{btn.textContent='🚀 בחר קובץ ופרסם';btn.disabled=false;btn.style.background='';st.textContent='';prog.style.display='none';pb.style.width='0%';input.value='';},4000);
+    setTimeout(()=>{btn.textContent='🚀 בחר קובץ ופרסם';btn.disabled=false;btn.style.background='';st.textContent='';st.innerHTML='';prog.style.display='none';pb.style.width='0%';input.value='';},10000);
   }catch(e){
     btn.textContent='❌ שגיאה';btn.disabled=false;st.textContent=e.message;st.className='card-status err';
     toast('❌ '+e.message,true);
