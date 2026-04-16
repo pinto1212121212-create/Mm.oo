@@ -99,6 +99,18 @@ h1{text-align:center;font-size:22px;margin-bottom:4px;color:#5eead4}
 
 <div class="toast" id="toast"></div>
 
+<div id="del-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center">
+  <div style="background:#1e293b;border-radius:16px;padding:24px;margin:20px;border:1px solid #f87171;text-align:center">
+    <div style="font-size:32px;margin-bottom:8px">🗑</div>
+    <div id="del-modal-name" style="font-size:16px;font-weight:700;margin-bottom:6px"></div>
+    <div style="font-size:13px;color:#94a3b8;margin-bottom:20px">למחוק מהרשימה?</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeDelModal()" style="flex:1;background:#334155;border:none;border-radius:10px;padding:12px;color:white;font-weight:700;cursor:pointer;font-size:14px;font-family:inherit">ביטול</button>
+      <button onclick="doDelete()" style="flex:1;background:#dc2626;border:none;border-radius:10px;padding:12px;color:white;font-weight:700;cursor:pointer;font-size:14px;font-family:inherit">מחק</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const DEFAULT_SITES=[
   {id:'panel',    name:'🚀 לוח פרסום',                 repo:'deploy-panel',   owner:'pinto1212121212-create'},
@@ -160,7 +172,7 @@ function renderSites(){
           <button class="edit-btn" onclick="moveSite('${s.id}',-1)" style="padding:6px 8px">▲</button>
           <button class="edit-btn" onclick="moveSite('${s.id}',1)" style="padding:6px 8px">▼</button>
           <button class="edit-btn" onclick="openEditor('${s.repo}','${s.owner}','${s.name}')">✏️</button>
-          <button class="del-btn" onclick="deleteSite('${s.id}')">🗑</button>
+          <button class="del-btn" onclick="confirmDelete('${s.id}','${s.name}')">🗑</button>
         </div>
       </div>
       <input type="file" accept=".html" id="file-${s.id}" style="display:none" onchange="doUpload('${s.id}','${s.repo}','${s.owner}',this)">
@@ -266,7 +278,20 @@ function moveSite(id,dir){
   [sites[i],sites[j]]=[sites[j],sites[i]];
   saveSites(sites);renderSites();
 }
-function deleteSite(id){if(!confirm('למחוק מהרשימה?'))return;saveSites(getSites().filter(s=>s.id!==id));renderSites();}
+let _delId='';
+function confirmDelete(id,name){
+  _delId=id;
+  document.getElementById('del-modal-name').textContent=name;
+  document.getElementById('del-modal').style.display='flex';
+}
+function closeDelModal(){document.getElementById('del-modal').style.display='none';_delId='';}
+function doDelete(){
+  if(!_delId)return;
+  saveSites(getSites().filter(s=>s.id!==_delId));
+  closeDelModal();renderSites();
+  toast('🗑 נמחק');
+}
+function deleteSite(id){saveSites(getSites().filter(s=>s.id!==id));renderSites();}
 
 let editCtx={repo:'',owner:'',sha:''};
 async function openEditor(repo,owner,name){
