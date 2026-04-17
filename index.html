@@ -123,15 +123,20 @@ const DEFAULT_SITES=[
   {id:'laregesh', name:'🌸 בית לרגש',                  repo:'beit-laregesh',  owner:'pinto1212121212-create'},
 ];
 
+function getDeletedIds(){
+  try{return JSON.parse(localStorage.getItem('deleted_ids')||'[]');}catch(e){return [];}
+}
 function getSites(){
   try{
     const s=localStorage.getItem('deploy_sites');
+    const deleted=getDeletedIds();
     if(s===null){
-      // פעם ראשונה בלבד — שומר DEFAULT
-      localStorage.setItem('deploy_sites',JSON.stringify(DEFAULT_SITES));
-      return DEFAULT_SITES;
+      // פעם ראשונה — שומר DEFAULT בלי המחוקים
+      const initial=DEFAULT_SITES.filter(x=>!deleted.includes(x.id));
+      localStorage.setItem('deploy_sites',JSON.stringify(initial));
+      return initial;
     }
-    return JSON.parse(s)||[];
+    return (JSON.parse(s)||[]).filter(x=>!deleted.includes(x.id));
   }catch(e){return DEFAULT_SITES;}
 }
 function saveSites(s){localStorage.setItem('deploy_sites',JSON.stringify(s));}
